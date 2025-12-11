@@ -1,13 +1,17 @@
-# BonusMiner 配置文件
 bonus-miner:
-  # 矿机设置
   range: 5
   ticks-per-operation: 8
   fuel-consumption-multiplier: 1.0
-  # 高爆率系统
   bonus-system:
     enabled: true
-    base-chance: 0.3
-    bonus-amount: 1
-  # 防刷系统
+    # 多级奖励配置 (权重模式)
+    tiers:
+      - bonus: 0
+        weight: 50
+      - bonus: 1
+        weight: 30
+      - bonus: 2
+        weight: 15
+      - bonus: 3
+        weight: 5
   anti-dupe: true
