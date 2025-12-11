@@ -12,7 +12,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class BlockPlaceListener implements Listener {
 
     private final BonusMiner plugin;
-    // 定义一个唯一的元数据键名
+    // 定义元数据的键名
     private static final String METADATA_KEY = "BONUS_MINER_PLACED";
 
     public BlockPlaceListener(BonusMiner plugin) {
@@ -26,16 +26,17 @@ public class BlockPlaceListener implements Listener {
 
         // 检查放置的是否是矿石类方块
         if (isOre(type)) {
-            // ★ 核心修改：使用 setMetadata 方法为方块添加“人为放置”标记 ★
+            // ★★★ 修改点：使用 setMetadata 替代 getPersistentDataContainer ★★★
+            // 为方块添加“人为放置”的元数据标记，标记在插件卸载时会自动清理
             block.setMetadata(METADATA_KEY, new FixedMetadataValue(plugin, true));
         }
     }
 
     /**
      * 提供给矿机挖掘逻辑调用的静态方法，用于判断方块是否被此监听器标记过。
+     * 矿机在挖掘前应调用此方法进行检查。
      */
     public static boolean isBlockManuallyPlaced(Block block) {
-        // 检查该方块是否携带我们设置的元数据标记
         return block.hasMetadata(METADATA_KEY);
     }
 
