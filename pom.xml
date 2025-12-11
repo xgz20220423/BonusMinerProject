@@ -1,63 +1,47 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+package io.github.yourname.bonusminer.listeners;
 
-    <groupId>io.github.yourname</groupId>
-    <artifactId>BonusMiner</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+import io.github.yourname.bonusminer.BonusMiner;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
-    <properties>
-        <java.version>17</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+public class BlockPlaceListener implements Listener {
 
-    <repositories>
-        <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
+    private final BonusMiner plugin;
+    // 定义一个唯一的元数据键名
+    private static final String METADATA_KEY = "BONUS_MINER_PLACED";
 
-    <dependencies>
-        <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.20.1-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <!-- 关键：此依赖指向您本地的 Slimefun JAR 文件 -->
-            <groupId>com.github.Slimefun</groupId>
-            <artifactId>Slimefun4</artifactId>
-            <version>538e41a-Beta</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/Slimefun.jar</systemPath>
-        </dependency>
-    </dependencies>
+    public BlockPlaceListener(BonusMiner plugin) {
+        this.plugin = plugin;
+    }
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Block block = event.getBlock();
+        Material type = block.getType();
+
+        // 检查放置的是否是矿石类方块
+        if (isOre(type)) {
+            // ★ 核心修改：使用 setMetadata 方法为方块添加“人为放置”标记 ★
+            block.setMetadata(METADATA_KEY, new FixedMetadataValue(plugin, true));
+        }
+    }
+
+    /**
+     * 提供给矿机挖掘逻辑调用的静态方法，用于判断方块是否被此监听器标记过。
+     */
+    public static boolean isBlockManuallyPlaced(Block block) {
+        // 检查该方块是否携带我们设置的元数据标记
+        return block.hasMetadata(METADATA_KEY);
+    }
+
+    private boolean isOre(Material material) {
+        // 这是一个简单的判断，您可以根据需要扩展
+        String name = material.name();
+        return name.endsWith("_ORE") || material == Material.ANCIENT_DEBRIS;
+    }
+}
